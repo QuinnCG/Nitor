@@ -1,4 +1,4 @@
-﻿namespace Nitor;
+﻿namespace Nitor.Rendering;
 
 public interface IRenderSystem : ISystem
 {

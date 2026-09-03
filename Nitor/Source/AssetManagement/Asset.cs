@@ -129,4 +129,19 @@ public abstract class Asset
 	protected virtual void OnUnload() { }
 
 	protected virtual Task<byte[]> OnSaveAsync() => null!;
+
+	public override bool Equals(object? obj)
+	{
+		return obj is Asset asset && asset.Path == Path;
+	}
+
+	public override int GetHashCode()
+	{
+		return Path.GetHashCode();
+	}
+
+	public override string ToString()
+	{
+		return Path;
+	}
 }

@@ -1,4 +1,6 @@
-﻿namespace Nitor;
+﻿using Nitor.Rendering;
+
+namespace Nitor;
 
 public static class SystemManager
 {

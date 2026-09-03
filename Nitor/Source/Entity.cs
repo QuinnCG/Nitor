@@ -4,10 +4,6 @@ namespace Nitor;
 
 public class Entity : IEnumerable<Component>
 {
-	// TODO: Entity should deferr comp destruction (have destroy immediate and normal one is delayed).
-	// TODO: Figure best way to support entity and comp callbacks to things like update, lateupdate, simulate, and render: interfaces?
-	// Maybe use interfaces, then world would need to update components for each entity directly. Order could still be maintained though.
-
 	public bool WasCreated { get; private set; }
 	public bool WasDestroyed { get; private set; }
 
