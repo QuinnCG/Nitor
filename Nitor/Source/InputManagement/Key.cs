@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Input;
 using SilkKey = Silk.NET.Input.Key;
 
-namespace Nitor;
+namespace Nitor.InputManagement;
 
 public class Key : IBinaryInput
 {

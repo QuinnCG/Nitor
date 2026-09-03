@@ -1,4 +1,4 @@
-﻿namespace Nitor;
+﻿namespace Nitor.AssetManagement;
 
 public abstract class Asset
 {

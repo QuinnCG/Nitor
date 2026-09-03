@@ -1,4 +1,5 @@
 ﻿using Nitor;
+using Nitor.InputManagement;
 
 namespace Sandbox;
 
@@ -13,11 +14,6 @@ class Game : Application
 	protected override void OnLoad()
 	{
 		SystemManager.Register<MySystem>();
-
-		var file = Asset.Load<TextFile>("MyFile.txt");
-		Console.WriteLine(file.Text);
-		file.Text += "More data";
-		file.Save();
 	}
 
 	protected override void OnClose()

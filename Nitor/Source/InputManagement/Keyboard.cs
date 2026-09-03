@@ -1,6 +1,6 @@
 ﻿using SilkKey = Silk.NET.Input.Key;
 
-namespace Nitor;
+namespace Nitor.InputManagement;
 
 public static class Keyboard
 {

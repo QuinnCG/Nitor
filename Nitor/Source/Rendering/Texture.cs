@@ -1,4 +1,6 @@
-﻿namespace Nitor.Rendering;
+﻿using Nitor.AssetManagement;
+
+namespace Nitor.Rendering;
 
 public class Texture : Asset, IBindable
 {

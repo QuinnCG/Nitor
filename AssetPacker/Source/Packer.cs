@@ -1,7 +1,7 @@
 ﻿using System.IO.Hashing;
 using System.Linq.Expressions;
 using System.Text;
-using Nitor;
+using Nitor.AssetManagement;
 
 namespace AssetPacker;
 

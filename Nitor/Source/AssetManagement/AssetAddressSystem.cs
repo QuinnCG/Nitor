@@ -2,7 +2,7 @@
 using System.IO.Hashing;
 using System.Text;
 
-namespace Nitor;
+namespace Nitor.AssetManagement;
 
 internal class AssetAddressSystem : ISystem
 {

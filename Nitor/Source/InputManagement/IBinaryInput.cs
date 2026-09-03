@@ -1,4 +1,4 @@
-﻿namespace Nitor;
+﻿namespace Nitor.InputManagement;
 
 public interface IBinaryInput
 {
