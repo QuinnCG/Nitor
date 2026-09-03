@@ -21,7 +21,7 @@
 		</None>
 	</ItemGroup>
 
-	<Target Name="PackAssets" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+	<Target Name="PackAssets" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
 
 		<Message Text="Packing assets..." Importance="high" />
 

@@ -31,6 +31,7 @@ public abstract class Application
 
 	private static void RegisterDefaultSystems()
 	{
+		SystemManager.Register<AssetAddressSystem>();
 		SystemManager.Register<InputSystem>();
 		SystemManager.Register<Rendering.RendererSystem>();
 	}

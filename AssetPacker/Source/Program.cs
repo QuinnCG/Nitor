@@ -2,12 +2,14 @@
 
 static class Program
 {
-	static void Main(string[] args)
+	static async Task Main(string[] args)
 	{
-		foreach (var arg in args)
+		if (args.Length != 2)
 		{
-			Console.WriteLine(arg);
-			Packer.Pack();
+			string suffix = args.Length > 2 ? "Too many args!" : "Too few args!";
+			throw new ArgumentException("Must have two arguments: source asset path & target build path! " + suffix);
 		}
+
+		await Packer.PackAsync(args[0], args[1]);
 	}
 }

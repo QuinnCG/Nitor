@@ -2,7 +2,7 @@
 
 public static class SystemManager
 {
-	private static readonly HashSet<ISystem> _systems = [];
+	private static readonly HashSet<ISystem> _allSystems = [];
 	private static readonly HashSet<IUpdateSystem> _updateSystems = [];
 	private static readonly HashSet<ILateUpdateSystem> _lateUpdateSystems = [];
 	private static readonly HashSet<ISimulateSystem> _simulateSystems = [];
@@ -15,7 +15,7 @@ public static class SystemManager
 
 	public static void Register(ISystem system)
 	{
-		if (_systems.Add(system))
+		if (_allSystems.Add(system))
 		{
 			if (system is IUpdateSystem update)
 			{
@@ -41,7 +41,7 @@ public static class SystemManager
 
 	public static void Unregister(ISystem system)
 	{
-		if (_systems.Remove(system))
+		if (_allSystems.Remove(system))
 		{
 			if (system is IUpdateSystem update)
 			{
@@ -67,7 +67,7 @@ public static class SystemManager
 
 	internal static void Create()
 	{
-		foreach (var system in _systems)
+		foreach (var system in _allSystems)
 		{
 			system.OnCreate();
 		}
@@ -75,7 +75,7 @@ public static class SystemManager
 
 	internal static void Destroy()
 	{
-		foreach (var system in _systems)
+		foreach (var system in _allSystems)
 		{
 			system.OnDestroy();
 		}

@@ -13,6 +13,7 @@ class Game : Application
 	protected override void OnLoad()
 	{
 		SystemManager.Register<MySystem>();
+		Console.WriteLine(Asset.Load<TextFile>("MyFile.txt").Text);
 	}
 
 	protected override void OnClose()
@@ -25,9 +26,9 @@ class MySystem : IUpdateSystem
 {
 	public void OnUpdate()
 	{
-		if (Keyboard.Space.IsPressed)
+		if (Keyboard.Escape.IsPressed)
 		{
-			Console.WriteLine("Spacebar");
+			Application.Quit();
 		}
 	}
 }
