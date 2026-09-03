@@ -5,6 +5,25 @@ namespace Nitor;
 
 public abstract class Application
 {
+	/// <summary>
+	/// Is this build a debug build?
+	/// </summary>
+	public static bool IsDebug
+	{
+		get
+		{
+#if DEBUG
+			return true;
+#else
+			return false;
+#endif
+		}
+	}
+	/// <summary>
+	/// Is this build a release build?
+	/// </summary>
+	public static bool IsRelease => !IsDebug;
+
 	internal static event Action? OnPreLoad;
 	public static event Action? OnLoaded;
 	internal static IWindow Window { get; private set; } = null!;

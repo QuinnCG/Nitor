@@ -13,7 +13,11 @@ class Game : Application
 	protected override void OnLoad()
 	{
 		SystemManager.Register<MySystem>();
-		Console.WriteLine(Asset.Load<TextFile>("MyFile.txt").Text);
+
+		var file = Asset.Load<TextFile>("MyFile.txt");
+		Console.WriteLine(file.Text);
+		file.Text += "More data";
+		file.Save();
 	}
 
 	protected override void OnClose()

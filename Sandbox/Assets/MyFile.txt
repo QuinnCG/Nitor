@@ -1,2 +1,1 @@
-This is my text file!
-This is more text!
+My text file.More data

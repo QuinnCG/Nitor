@@ -98,6 +98,35 @@ public abstract class Asset
 		Release(Path);
 	}
 
+#pragma warning disable CA1822 // Mark members as static
+	public async Task SaveAsync()
+#pragma warning restore CA1822 // Mark members as static
+	{
+#if DEBUG
+		var saveHandle = OnSaveAsync();
+
+		if (saveHandle == null)
+		{
+			throw new Exception("Cannot save asset as it does not implement its OnSaveAsync() method!");
+		}
+
+		var data = await saveHandle;
+		var localWrite = File.WriteAllBytesAsync($"Assets\\{Path}", data);
+		var originWrite = File.WriteAllBytesAsync($"../../../Assets\\{Path}", data);
+
+		await localWrite;
+		await originWrite;
+#else
+		throw new Exception("Cannot save data in Release builds!");
+#endif
+	}
+	public async void Save()
+	{
+		SaveAsync().Wait();
+	}
+
 	protected virtual void OnLoad(byte[] data) { }
 	protected virtual void OnUnload() { }
+
+	protected virtual Task<byte[]> OnSaveAsync() => null!;
 }
