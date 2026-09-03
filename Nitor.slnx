@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="AssetPacker/AssetPacker.csproj" Id="3976ce13-10e6-47a8-a922-415048fd7b70" />
   <Project Path="Nitor/Nitor.csproj" />
   <Project Path="Sandbox/Sandbox.csproj" />
 </Solution>

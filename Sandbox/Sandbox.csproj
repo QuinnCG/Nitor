@@ -5,11 +5,32 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<RootNamespace>Source</RootNamespace>
+		<AssetPath>Assets</AssetPath>
+		<BaseOutputPath>Binaries\</BaseOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Nitor\Nitor.csproj" />
+
+		<ProjectReference Include="..\AssetPacker\AssetPacker.csproj" ReferenceOutputAssembly="false" Private="false" />
 	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<None Update="$(AssetPath)\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<Target Name="PackAssets" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+
+		<Message Text="Packing assets..." Importance="high" />
+
+		<MSBuild Projects="..\AssetPacker\AssetPacker.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+			<Output TaskParameter="TargetOutputs" ItemName="AssetPackerOutput" />
+		</MSBuild>
+
+		<Exec Command="dotnet &quot;@(AssetPackerOutput)&quot; &quot;$(MSBuildProjectDirectory)\$(AssetPath)&quot; &quot;$(TargetDir).&quot;" />
+
+	</Target>
 
 </Project>
