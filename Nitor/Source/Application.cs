@@ -48,9 +48,10 @@ public abstract class Application
 
 	private static void RegisterDefaultSystems()
 	{
+		SystemManager.Register<World>();
 		SystemManager.Register<AssetManagement.AssetAddressSystem>();
 		SystemManager.Register<InputManagement.InputSystem>();
-		SystemManager.Register<Rendering.RendererSystem>();
+		SystemManager.Register<Rendering.Renderer>();
 	}
 
 	private void Update(double dt)

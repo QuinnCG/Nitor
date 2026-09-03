@@ -1,10 +1,114 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Nitor.Rendering;
 
 namespace Nitor;
 
-public static class World
+public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable<Entity>
 {
+	private static readonly HashSet<Entity> _entities = [];
+	private static readonly HashSet<Entity> _destroyed = [];
 
+	private static readonly HashSet<IUpdatable> _update = [];
+	private static readonly HashSet<ILateUpdatable> _lateUpdate = [];
+	private static readonly HashSet<ISimulatable> _simulate = [];
+
+	public static void Add(Entity entity)
+	{
+		if (_entities.Add(entity))
+		{
+			entity.Create();
+
+			if (entity is IUpdatable update)
+			{
+				_update.Add(update);
+			}
+
+			if (entity is ILateUpdatable lateUpdate)
+			{
+				_lateUpdate.Add(lateUpdate);
+			}
+
+			if (entity is ISimulatable simulate)
+			{
+				_simulate.Add(simulate);
+			}
+
+			if (entity is IRenderable render)
+			{
+				Renderer.Register(render);
+			}
+		}
+	}
+
+	public static void Remove(Entity entity)
+	{
+		if (_entities.Contains(entity) && _destroyed.Add(entity))
+		{
+			entity.Destroy();
+
+			if (entity is IUpdatable update)
+			{
+				_update.Remove(update);
+			}
+
+			if (entity is ILateUpdatable lateUpdate)
+			{
+				_lateUpdate.Remove(lateUpdate);
+			}
+
+			if (entity is ISimulatable simulate)
+			{
+				_simulate.Remove(simulate);
+			}
+
+			if (entity is IRenderable render)
+			{
+				Renderer.Unregister(render);
+			}
+		}
+	}
+
+	public void OnUpdate()
+	{
+		foreach (var update in _update)
+		{
+			update.OnUpdate();
+		}
+	}
+
+	public void OnLateUpdate()
+	{
+		foreach (var late in _lateUpdate)
+		{
+			late.OnLateUpdate();
+		}
+
+		foreach (var entity in _destroyed)
+		{
+			_entities.Remove(entity);
+		}
+
+		_destroyed.Clear();
+	}
+
+	public void OnSimulate()
+	{
+		foreach (var simulate in _simulate)
+		{
+			simulate.OnSimulate();
+		}
+	}
+
+	public IEnumerator<Entity> GetEnumerator()
+	{
+		return ((IEnumerable<Entity>)_entities).GetEnumerator();
+	}
+
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return ((IEnumerable)_entities).GetEnumerator();
+	}
 }

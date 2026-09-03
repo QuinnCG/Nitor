@@ -1,6 +1,6 @@
 ﻿namespace Nitor.Rendering;
 
-public class RendererSystem : IRenderSystem
+public class Renderer : IRenderSystem
 {
 	public static void Register(IRenderable renderable)
 	{
