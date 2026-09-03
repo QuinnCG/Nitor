@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Nitor.AssetManagement;
 
 namespace Nitor;
 

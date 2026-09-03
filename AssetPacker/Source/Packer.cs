@@ -51,11 +51,6 @@ public static class Packer
 
 		foreach (var asset in assets)
 		{
-			Console.WriteLine(asset.RelativePath);
-		}
-
-		foreach (var asset in assets)
-		{
 			assetToLocation.Add(asset.RelativePath, new(positionOffset + (int)writer.BaseStream.Position, asset.Data.Length));
 			writer.Write(asset.Data);
 		}
@@ -113,7 +108,7 @@ public static class Packer
 				Data = data
 			});
 
-			builder.AppendLine("\t- " + path);
+			builder.AppendLine($"\t- '{path}' ({data.Length:N0} bytes)");
 		}
 
 		Console.Write(builder.ToString());

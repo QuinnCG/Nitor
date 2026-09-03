@@ -24,8 +24,6 @@ public abstract class Application
 	/// </summary>
 	public static bool IsRelease => !IsDebug;
 
-	internal static event Action? OnPreLoad;
-	public static event Action? OnLoaded;
 	internal static IWindow Window { get; private set; } = null!;
 
 	public static bool IsClosing => Window.IsClosing;
@@ -50,8 +48,8 @@ public abstract class Application
 
 	private static void RegisterDefaultSystems()
 	{
-		SystemManager.Register<AssetAddressSystem>();
-		SystemManager.Register<InputSystem>();
+		SystemManager.Register<AssetManagement.AssetAddressSystem>();
+		SystemManager.Register<InputManagement.InputSystem>();
 		SystemManager.Register<Rendering.RendererSystem>();
 	}
 
