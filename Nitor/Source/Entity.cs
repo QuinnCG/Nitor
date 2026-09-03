@@ -11,6 +11,8 @@ public class Entity : IEnumerable<Component>
 	public bool WasCreated { get; private set; }
 	public bool WasDestroyed { get; private set; }
 
+	public event Action<Component>? OnComponentAdded, OnComponentRemoved;
+
 	private readonly HashSet<Component> _components = [];
 
 	internal void Create()
@@ -61,6 +63,8 @@ public class Entity : IEnumerable<Component>
 
 		_components.Add(component);
 		component.Create(this);
+
+		OnComponentAdded?.Invoke(component);
 	}
 
 	public bool HasComponent(Component component)
@@ -147,6 +151,8 @@ public class Entity : IEnumerable<Component>
 		{
 			component.Destroy();
 			_components.Remove(component);
+
+			OnComponentRemoved?.Invoke(component);
 		}
 	}
 

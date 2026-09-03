@@ -40,6 +40,14 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 			{
 				Renderer.Register(render);
 			}
+
+			foreach (var comp in entity)
+			{
+				OnComponentAdded(comp);
+			}
+
+			entity.OnComponentAdded += OnComponentAdded;
+			entity.OnComponentRemoved += OnComponentRemoved;
 		}
 	}
 
@@ -47,6 +55,9 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 	{
 		if (_entities.Contains(entity) && _destroyed.Add(entity))
 		{
+			entity.OnComponentAdded -= OnComponentAdded;
+			entity.OnComponentRemoved -= OnComponentRemoved;
+
 			entity.Destroy();
 
 			if (entity is IUpdatable update)
@@ -68,6 +79,57 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 			{
 				Renderer.Unregister(render);
 			}
+
+			foreach (var comp in entity)
+			{
+				OnComponentRemoved(comp);
+			}
+		}
+	}
+
+	private static void OnComponentAdded(Component component)
+	{
+		if (component is IUpdatable update)
+		{
+			_update.Add(update);
+		}
+
+		if (component is ILateUpdatable lateUpdate)
+		{
+			_lateUpdate.Add(lateUpdate);
+		}
+
+		if (component is ISimulatable simulate)
+		{
+			_simulate.Add(simulate);
+		}
+
+		if (component is IRenderable render)
+		{
+			Renderer.Register(render);
+		}
+	}
+
+	private static void OnComponentRemoved(Component component)
+	{
+		if (component is IUpdatable update)
+		{
+			_update.Add(update);
+		}
+
+		if (component is ILateUpdatable lateUpdate)
+		{
+			_lateUpdate.Add(lateUpdate);
+		}
+
+		if (component is ISimulatable simulate)
+		{
+			_simulate.Add(simulate);
+		}
+
+		if (component is IRenderable render)
+		{
+			Renderer.Register(render);
 		}
 	}
 
