@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Nitor/Nitor.csproj" />
+  <Project Path="Sandbox/Sandbox.csproj" />
+</Solution>
