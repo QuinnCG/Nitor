@@ -77,7 +77,7 @@ public static class SystemManager
 
 	internal static void Destroy()
 	{
-		foreach (var system in _allSystems)
+		foreach (var system in _allSystems.Reverse())
 		{
 			system.OnDestroy();
 		}

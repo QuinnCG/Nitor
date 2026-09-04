@@ -13,6 +13,15 @@ public class Entity : IEnumerable<Component>
 
 	private readonly HashSet<Component> _components = [];
 
+	public Entity() { }
+	public Entity(params IEnumerable<Component> components)
+	{
+		foreach (var comp in components)
+		{
+			_components.Add(comp);
+		}
+	}
+
 	internal void Create()
 	{
 		if (!WasCreated && !WasDestroyed)

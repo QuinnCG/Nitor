@@ -24,7 +24,7 @@ public class CameraView : Component
 
 			return
 				Matrix4x4.CreateTranslation(-pos.X, -pos.Y, -1f) *
-				Matrix4x4.CreateRotationZ(-rot * MathF.DegToRad) *
+				Matrix4x4.CreateRotationZ(rot * MathF.DegToRad) *
 				Matrix4x4.CreateOrthographic(OrthographicScale * ratio, OrthographicScale, 0.1f, 5f);
 		}
 	}

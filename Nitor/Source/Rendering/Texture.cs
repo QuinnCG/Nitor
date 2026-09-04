@@ -7,33 +7,24 @@ namespace Nitor.Rendering;
 
 public class Texture : Asset, IBindable
 {
+	public static Texture NoTexture { get; } = new();
+
 	public uint Handle { get; private set; }
+	/// <summary>
+	/// This is only valid if <see cref="Renderer.GLExtensions.UsesBindlessTextures"/> is true.
+	/// </summary>
+	public ulong BindlessHandle { get; private set; }
 
 	protected override void OnLoad(byte[] data)
 	{
 		var gl = Renderer.OpenGL;
 
-		uint width, height;
-		ReadOnlySpan<byte> pixels;
-		StbiImage? imageData = null;
+		using var reader = new BinaryReader(new MemoryStream(data));
 
-		if (Asset.AreAssetsPacked)
-		{
-			using var reader = new BinaryReader(new MemoryStream(data));
-			width = reader.ReadUInt32();
-			height = reader.ReadUInt32();
-			int pixelDataLength = reader.ReadInt32();
-			pixels = new(reader.ReadBytes(pixelDataLength));
-		}
-		else
-		{
-			Stbi.SetFlipVerticallyOnLoad(true);
-			imageData = Stbi.LoadFromMemory(new ReadOnlySpan<byte>(data), 4);
-
-			width = (uint)imageData.Width;
-			height = (uint)imageData.Height;
-			pixels = imageData.Data;
-		}
+		uint width = reader.ReadUInt32();
+		uint height = reader.ReadUInt32();
+		int pixelDataLength = reader.ReadInt32();
+		var pixels = new ReadOnlySpan<byte>(reader.ReadBytes(pixelDataLength));
 
 		Handle = gl.CreateTexture(TextureTarget.Texture2D);
 		Bind();
@@ -46,12 +37,25 @@ public class Texture : Asset, IBindable
 		gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
 		gl.GenerateMipmap(TextureTarget.Texture2D);
 
-		imageData?.Dispose();
+		var extensions = Renderer.Extensions;
+		if (extensions.UsesBindlessTextures)
+		{
+			BindlessHandle = extensions.Bindless.GetTextureHandle(Handle);
+			extensions.Bindless.MakeTextureHandleResident(BindlessHandle);
+		}
 	}
 
 	protected override void OnUnload()
 	{
+		var extensions = Renderer.Extensions;
+		if (extensions.UsesBindlessTextures)
+		{
+			extensions.Bindless.MakeTextureHandleNonResident(BindlessHandle);
+			BindlessHandle = 0;
+		}
+
 		Renderer.OpenGL.DeleteTexture(Handle);
+		Handle = 0;
 	}
 
 	public void Bind()

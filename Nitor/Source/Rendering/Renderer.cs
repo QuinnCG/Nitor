@@ -1,10 +1,34 @@
 ﻿using System.Text;
 using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ARB;
 
 namespace Nitor.Rendering;
 
 public class Renderer : IRenderSystem
 {
+	public class GLExtensions
+	{
+		public bool UsesBindlessTextures { get; internal set; }
+		/// <summary>
+		/// This will be null if bindless textures are not supported.
+		/// </summary>
+		public ArbBindlessTexture Bindless
+		{
+			get
+			{
+				if (field == null)
+				{
+					throw new Exception("OpenGL bindless textures are not supported on this device!");
+				}
+
+				return field;
+			}
+			internal set;
+		} = null!;
+	}
+
+	public static GLExtensions Extensions { get; } = new();
+
 	public static readonly string TimeUniform = "uTime";
 	public static readonly string CameraUniform = "uCamera";
 
@@ -34,6 +58,12 @@ public class Renderer : IRenderSystem
 		{
 			gl.Viewport(0, 0, (uint)size.X, (uint)size.Y);
 		};
+
+		if (gl.TryGetExtension<ArbBindlessTexture>(out var bindless))
+		{
+			Extensions.UsesBindlessTextures = true;
+			Extensions.Bindless = bindless;
+		}
 	}
 
 	public void OnDestroy()
@@ -117,11 +147,6 @@ public class Renderer : IRenderSystem
 			return a.Shader.Path.CompareTo(b.Shader.Path);
 		}
 
-		if (a.Texture != b.Texture)
-		{
-			return a.Texture.Path.CompareTo(b.Texture.Path);
-		}
-
 		return 0;
 	}
 	public void OnRender()
@@ -141,7 +166,6 @@ public class Renderer : IRenderSystem
 				}
 			}
 
-			renderable.Texture.Bind();
 			renderable.Shader.Bind();
 
 			SetUniforms(renderable.Shader);

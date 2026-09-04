@@ -8,7 +8,6 @@ internal class AssetAddressSystem : ISystem
 {
 	private static readonly Dictionary<UInt128, AssetLocation> _manifest = [];
 
-#if RELEASE
 	public void OnCreate()
 	{
 		using var fs = File.OpenRead(Asset.PackFile);
@@ -25,7 +24,6 @@ internal class AssetAddressSystem : ISystem
 			_manifest.Add(hash, new(pos, size));
 		}
 	}
-#endif
 
 	public void OnDestroy()
 	{

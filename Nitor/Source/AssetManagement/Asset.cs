@@ -6,12 +6,6 @@ public abstract class Asset : IDisposable
 {
 	public static readonly string PackFile = "Data.pak";
 
-	/// <summary>
-	/// If true, then the assets should be expected to have been packed.<br/>
-	/// Depending on the asset, they be in a different form.
-	/// </summary>
-	public static bool AreAssetsPacked => Application.IsRelease;
-
 	class AssetData
 	{
 		public required Asset Asset;
@@ -147,9 +141,6 @@ public abstract class Asset : IDisposable
 
 	private static byte[] ResolveAssetData(string path)
 	{
-#if DEBUG
-		return File.ReadAllBytes($"Assets\\{path}");
-#else
 		if (AssetAddressSystem.TryGetLocation(path, out int pos, out int size))
 		{
 			using var fs = File.OpenRead(PackFile);
@@ -164,7 +155,6 @@ public abstract class Asset : IDisposable
 		{
 			throw new Exception("Failed to resolve asset at path!");
 		}
-#endif
 	}
 
 	public void Release()

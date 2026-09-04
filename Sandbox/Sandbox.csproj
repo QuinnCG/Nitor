@@ -16,13 +16,7 @@
 		<ProjectReference Include="..\AssetPacker\AssetPacker.csproj" ReferenceOutputAssembly="false" Private="false" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
-		<None Update="$(AssetPath)\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-
-	<Target Name="PackAssets" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
+	<Target Name="PackAssets" BeforeTargets="Build">
 
 		<Message Text="Packing assets..." Importance="high" />
 

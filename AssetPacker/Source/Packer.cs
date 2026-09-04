@@ -46,7 +46,6 @@ public static class Packer
 	{
 		Register<DefaultConverter>();
 		Register<ImageConverter>();
-		Register<ShaderConverter>();
 	}
 
 	private static Stream CreateAssetData(List<AssetData> assets, int manifestSize, out Dictionary<string, AssetLocation> assetToLocation)

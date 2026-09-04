@@ -1,16 +1,21 @@
 ﻿using Nitor;
 using Nitor.AssetManagement;
 using Nitor.InputManagement;
+using Nitor.Math;
 using Nitor.Rendering;
 
 namespace Sandbox;
 
-// TODO: Implement texture.
-// Implement batches.
-// Implement automatic sprite render system.
-// Test render performance.
-// Work on UI. Maybe special render batch that can use depth and bindless textures?
-// Work on editor-mode.
+// TODO:
+//		- Implement batches.
+//		- Implement automatic sprite render system.
+//		- Test render performance.
+//		- Work on UI.
+//			- Render layer should have a special set of UI layers that are part of the index calculation, but always kept with the highest index for UI.
+//			- Text rendering.
+//			- Support 9 slices.
+//		- Work on editor-mode.
+//		- Consider custom sprite atlases being made with build pipeline? Would need a system for the asset load to redirect loading.
 
 class Game : Application
 {
@@ -24,72 +29,28 @@ class Game : Application
 	{
 		SystemManager.Register<MySystem>();
 
-		var mySprite = new MySprite();
-		Renderer.Register(mySprite);
+		var texture = Asset.Load<Texture>("Images/Logo.png");
+		var shader = Asset.Load<Shader>("MyShader.shader");
 
-		var ent = new Entity();
-		ent.AddComponent(new Transform(), new CameraView());
-	}
-}
-
-class MySprite : IRenderable
-{
-	public Shader Shader { get; }
-	public Texture Texture { get; }
-	public BlendMode BlendMode { get; set; }
-	public RenderLayer Layer { get; set; } = RenderLayer.Default;
-
-	private uint _vao;
-
-	public unsafe MySprite()
-	{
-		Shader = Asset.Load<Shader>("MyShader.shader");
-		Texture = Asset.Load<Texture>("Images/Logo.png");
-
-		var gl = Renderer.OpenGL;
-
-		_vao = gl.CreateVertexArray();
-		gl.BindVertexArray(_vao);
-
-		var vertices = new float[]
+		var myEnt = new Entity(new Transform(), new SpriteRenderer()
 		{
-			-0.5f, -0.5f,	0f, 0f,
-			-0.5f,  0.5f,	0f, 1f,
-			 0.5f,  0.5f,	1f, 1f,
-			 0.5f, -0.5f,	1f, 0f
-		};
+			Shader = shader,
+			Sprite = new Sprite(texture, new(0f, 0f, 1f, 1f)),
+			Color = new Color(1f, 0.5f, 0.5f),
+			Pivot = new(0f, -1f)
+		});
 
-		var indices = new uint[]
+		var point = new Entity(new Transform(), new SpriteRenderer()
 		{
-			0, 1, 2,
-			3, 0, 2
-		};
+			Shader = shader,
+			Sprite = new(texture, new(0f, 0f, 1f, 1f)),
+			Scale = Vec2.One * 0.1f,
+			Color = Color.Blue
+		});
 
-		var vbo = gl.CreateBuffer();
-		gl.BindBuffer(Silk.NET.OpenGL.BufferTargetARB.ArrayBuffer, vbo);
-		gl.BufferData(Silk.NET.OpenGL.BufferTargetARB.ArrayBuffer, new ReadOnlySpan<float>(vertices), Silk.NET.OpenGL.BufferUsageARB.StaticDraw);
+		var cam = new Entity(new Transform(), new CameraView());
 
-		var ibo = gl.CreateBuffer();
-		gl.BindBuffer(Silk.NET.OpenGL.BufferTargetARB.ElementArrayBuffer, ibo);
-		gl.BufferData(Silk.NET.OpenGL.BufferTargetARB.ElementArrayBuffer, new ReadOnlySpan<uint>(indices), Silk.NET.OpenGL.BufferUsageARB.StaticDraw);
-
-		uint stride = sizeof(float) * 4;
-
-		gl.EnableVertexAttribArray(0);
-		gl.VertexAttribPointer(0, 2, Silk.NET.OpenGL.VertexAttribPointerType.Float, false, stride, 0);
-
-		gl.EnableVertexAttribArray(1);
-		gl.VertexAttribPointer(1, 2, Silk.NET.OpenGL.VertexAttribPointerType.Float, false, stride, sizeof(float) * 2);
-
-		gl.Disable(Silk.NET.OpenGL.EnableCap.CullFace);
-	}
-
-	public unsafe void OnRender()
-	{
-		var gl = Renderer.OpenGL;
-
-		gl.BindVertexArray(_vao);
-		gl.DrawElements(Silk.NET.OpenGL.PrimitiveType.Triangles, 6, Silk.NET.OpenGL.DrawElementsType.UnsignedInt, null);
+		World.Add(myEnt, cam, point);
 	}
 }
 

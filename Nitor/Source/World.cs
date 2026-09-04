@@ -15,39 +15,42 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 	private static readonly HashSet<ILateUpdatable> _lateUpdate = [];
 	private static readonly HashSet<ISimulatable> _simulate = [];
 
-	public static void Add(Entity entity)
+	public static void Add(params IEnumerable<Entity> entities)
 	{
-		if (_entities.Add(entity))
+		foreach (var entity in entities)
 		{
-			entity.Create();
-
-			if (entity is IUpdatable update)
+			if (_entities.Add(entity))
 			{
-				_update.Add(update);
-			}
+				entity.Create();
 
-			if (entity is ILateUpdatable lateUpdate)
-			{
-				_lateUpdate.Add(lateUpdate);
-			}
+				if (entity is IUpdatable update)
+				{
+					_update.Add(update);
+				}
 
-			if (entity is ISimulatable simulate)
-			{
-				_simulate.Add(simulate);
-			}
+				if (entity is ILateUpdatable lateUpdate)
+				{
+					_lateUpdate.Add(lateUpdate);
+				}
 
-			if (entity is IRenderable render)
-			{
-				Renderer.Register(render);
-			}
+				if (entity is ISimulatable simulate)
+				{
+					_simulate.Add(simulate);
+				}
 
-			foreach (var comp in entity)
-			{
-				OnComponentAdded(comp);
-			}
+				if (entity is IRenderable render)
+				{
+					Renderer.Register(render);
+				}
 
-			entity.OnComponentAdded += OnComponentAdded;
-			entity.OnComponentRemoved += OnComponentRemoved;
+				foreach (var comp in entity)
+				{
+					OnComponentAdded(comp);
+				}
+
+				entity.OnComponentAdded += OnComponentAdded;
+				entity.OnComponentRemoved += OnComponentRemoved;
+			}
 		}
 	}
 

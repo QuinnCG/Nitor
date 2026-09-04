@@ -22,32 +22,16 @@ public class Shader : Asset, IBindable
 		Handle = gl.CreateProgram();
 		uint vs, fs;
 
-		if (Asset.AreAssetsPacked)
+		string source = Encoding.Default.GetString(data);
+		var parts = source.Split("// Fragment");
+
+		if (parts.Length != 2)
 		{
-			const int intSize = sizeof(int);
-			var span = data.AsSpan();
-
-			int vertSectionEnd = intSize + BitConverter.ToInt32(span[..intSize]);
-			var vertData = span[intSize..vertSectionEnd];
-			int fragSectionSize = BitConverter.ToInt32(span[vertSectionEnd..(vertSectionEnd + intSize)]);
-			var fragData = span[(vertSectionEnd + intSize)..];
-
-			vs = CreateShader(ShaderType.VertexShader, vertData);
-			fs = CreateShader(ShaderType.FragmentShader, fragData);
+			throw new Exception("Must have vertex section and fragment section separated by '// Fragment'!");
 		}
-		else
-		{
-			string source = Encoding.Default.GetString(data);
-			var parts = source.Split("// Fragment");
 
-			if (parts.Length != 2)
-			{
-				throw new Exception("Must have vertex section and fragment section separated by '// Fragment'!");
-			}
-
-			vs = CreateShader(ShaderType.VertexShader, parts[0]);
-			fs = CreateShader(ShaderType.FragmentShader, parts[1]);
-		}
+		vs = CreateShader(ShaderType.VertexShader, parts[0]);
+		fs = CreateShader(ShaderType.FragmentShader, parts[1]);
 
 		gl.AttachShader(Handle, vs);
 		gl.AttachShader(Handle, fs);
@@ -170,16 +154,6 @@ public class Shader : Asset, IBindable
 			gl.DeleteShader(shader);
 			throw new Exception(info);
 		}
-
-		return shader;
-	}
-	private static unsafe uint CreateShader(ShaderType type, Span<byte> source)
-	{
-		var gl = Renderer.OpenGL;
-
-		var shader = gl.CreateShader(type);
-		gl.ShaderBinary(new ReadOnlySpan<uint>([shader]), ShaderBinaryFormat.ShaderBinaryFormatSpirV, source);
-		gl.SpecializeShader(shader, "main", 0, null, null);
 
 		return shader;
 	}
