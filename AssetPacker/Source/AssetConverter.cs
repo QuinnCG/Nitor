@@ -13,8 +13,12 @@ abstract class AssetConverter
 
 	protected static async Task<byte[]> ReadAllBytesAsync(Stream stream)
 	{
+		stream.Position = 0;
 		var data = new byte[stream.Length];
 		await stream.ReadExactlyAsync(data, 0, data.Length);
 		return data;
 	}
+
+	public virtual void OnInitialize() { }
+	public virtual void OnCleanUp() { }
 }

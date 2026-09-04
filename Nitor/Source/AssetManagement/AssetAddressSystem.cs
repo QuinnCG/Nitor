@@ -27,6 +27,11 @@ internal class AssetAddressSystem : ISystem
 	}
 #endif
 
+	public void OnDestroy()
+	{
+		Asset.ReleaseRemaining();
+	}
+
 	public static bool TryGetLocation(string path, out int position, out int size)
 	{
 		path = path.Replace('/', '\\');

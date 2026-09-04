@@ -42,6 +42,13 @@ public static class Packer
 		await assetDataHandle;
 	}
 
+	private static void RegisterConverters()
+	{
+		Register<DefaultConverter>();
+		Register<ImageConverter>();
+		Register<ShaderConverter>();
+	}
+
 	private static Stream CreateAssetData(List<AssetData> assets, int manifestSize, out Dictionary<string, AssetLocation> assetToLocation)
 	{
 		assetToLocation = new();
@@ -81,6 +88,18 @@ public static class Packer
 	{
 		var tasks = new List<(string Path, Task<byte[]> Task)>();
 
+		var uniqueConverters = new HashSet<AssetConverter>();
+
+		foreach (var converter in _converters.Values)
+		{
+			uniqueConverters.Add(converter);
+		}
+
+		foreach (var converter in uniqueConverters)
+		{
+			converter.OnInitialize();
+		}
+
 		foreach (var path in Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories))
 		{
 			string relativePath = path
@@ -111,13 +130,14 @@ public static class Packer
 			builder.AppendLine($"\t- '{path}' ({data.Length:N0} bytes)");
 		}
 
-		Console.Write(builder.ToString());
-		return allData;
-	}
+		foreach (var converter in uniqueConverters)
+		{
+			converter.OnCleanUp();
+		}
 
-	private static void RegisterConverters()
-	{
-		Register<DefaultConverter>();
+		Console.Write(builder.ToString());
+
+		return allData;
 	}
 
 	private static void Register<T>() where T : AssetConverter, new()

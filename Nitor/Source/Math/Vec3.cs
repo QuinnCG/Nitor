@@ -6,6 +6,8 @@ namespace Nitor.Math;
 public struct Vec3 : IEquatable<Vec3>
 {
 	public static Vec3 Zero { get; } = new();
+	public static Vec3 One { get; } = new(1f, 1f, 1f);
+
 	public static Vec3 Up { get; } = new(0f, 1f);
 	public static Vec3 Down { get; } = new(0f, -1f);
 	public static Vec3 Left { get; } = new(-1f, 0f);

@@ -1,21 +1,41 @@
-﻿using Silk.NET.OpenGL;
+﻿using System.Text;
+using Silk.NET.OpenGL;
 
 namespace Nitor.Rendering;
 
 public class Renderer : IRenderSystem
 {
+	public static readonly string TimeUniform = "uTime";
+	public static readonly string CameraUniform = "uCamera";
+
+	public static GL OpenGL { get; private set; } = null!;
 	public static Color ClearColor { get; set; } = Color.Black;
-	internal static GL OpenGL { get; private set; } = null!;
 
 	private static readonly List<IRenderable> _renderables = [];
 
 	private static readonly Dictionary<IRenderable, HashSet<Action>> _beforeRendercallbacks = [], _afterRenderCallbacks = [];
 	private static readonly Dictionary<Action, IRenderable> _callbackToRenderable = [];
 
-	public void OnCreate()
+	public unsafe void OnCreate()
 	{
 		OpenGL = GL.GetApi(Application.Window);
+		var gl = OpenGL;
+
+		gl.Disable(EnableCap.CullFace);
+		gl.FrontFace(FrontFaceDirection.CW);
+
+		gl.Enable(EnableCap.Blend);
+		gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+		gl.Enable(EnableCap.DebugOutput);
+		gl.DebugMessageCallback(OnOpenGLError, null);
+
+		Application.Window.FramebufferResize += (size) =>
+		{
+			gl.Viewport(0, 0, (uint)size.X, (uint)size.Y);
+		};
 	}
+
 	public void OnDestroy()
 	{
 		OpenGL = null!;
@@ -82,24 +102,24 @@ public class Renderer : IRenderSystem
 
 	private int Compare(IRenderable a, IRenderable b)
 	{
-		if (a.BlendMode != b.BlendMode)
-		{
-			return (a.BlendMode is BlendMode.Translucent) ? -1 : 1;
-		}
-
 		if (a.Layer.Index != b.Layer.Index)
 		{
 			return (a.Layer.Index < b.Layer.Index) ? -1 : 1;
 		}
 
-		if (a.Texture != b.Texture)
+		if (a.BlendMode != b.BlendMode)
 		{
-			return a.Texture.Path.CompareTo(b.Texture.Path);
+			return (a.BlendMode is BlendMode.Translucent) ? -1 : 1;
 		}
 
 		if (a.Shader != b.Shader)
 		{
 			return a.Shader.Path.CompareTo(b.Shader.Path);
+		}
+
+		if (a.Texture != b.Texture)
+		{
+			return a.Texture.Path.CompareTo(b.Texture.Path);
 		}
 
 		return 0;
@@ -121,6 +141,11 @@ public class Renderer : IRenderSystem
 				}
 			}
 
+			renderable.Texture.Bind();
+			renderable.Shader.Bind();
+
+			SetUniforms(renderable.Shader);
+
 			renderable.OnRender();
 
 			if (_afterRenderCallbacks.TryGetValue(renderable, out set))
@@ -130,6 +155,27 @@ public class Renderer : IRenderSystem
 					callback.Invoke();
 				}
 			}
+		}
+	}
+
+	private static void SetUniforms(Shader shader)
+	{
+		if (shader.HasUniform(TimeUniform))
+		{
+			shader.SetUniform(TimeUniform, Time.Now);
+		}
+
+		if (shader.HasUniform(CameraUniform) && CameraView.Current != null)
+		{
+			shader.SetUniform(CameraUniform, CameraView.Current.Matrix);
+		}
+	}
+
+	private unsafe void OnOpenGLError(GLEnum source, GLEnum type, int id, GLEnum severity, int length, nint message, nint userParam)
+	{
+		if (severity is GLEnum.DebugSeverityHigh or GLEnum.DebugSeverityMedium)
+		{
+			Console.WriteLine(Encoding.Default.GetString((byte*)message, length));
 		}
 	}
 }

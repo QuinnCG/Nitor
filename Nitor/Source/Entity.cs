@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Nitor;
 
@@ -20,6 +22,7 @@ public class Entity : IEnumerable<Component>
 			foreach (var component in _components)
 			{
 				component.Create(this);
+				ValidateComponentRequirements(component);
 			}
 
 			OnCreate();
@@ -50,17 +53,49 @@ public class Entity : IEnumerable<Component>
 
 		return comp;
 	}
-	public void AddComponent(Component component)
+	public void AddComponent(params IEnumerable<Component> components)
 	{
-		if (component.Entity != null)
+		foreach (var comp in components)
 		{
-			throw new Exception("Entity already has a parent. Cannot add another!");
+			if (comp.Entity != null)
+			{
+				throw new Exception("Entity already has a parent. Cannot add another!");
+			}
+
+			_components.Add(comp);
+			comp.Create(this);
+
+			OnComponentAdded?.Invoke(comp);
 		}
 
-		_components.Add(component);
-		component.Create(this);
+		foreach (var comp in components)
+		{
+			ValidateComponentRequirements(comp);
+		}
+	}
 
-		OnComponentAdded?.Invoke(component);
+	[Conditional("DEBUG")]
+	private void ValidateComponentRequirements(Component component)
+	{
+		foreach (var attribute in component.GetType().GetCustomAttributes())
+		{
+			var type = attribute.GetType();
+
+			if (!type.IsGenericType)
+			{
+				continue;
+			}
+
+			if (type.GetGenericTypeDefinition() == typeof(RequireSiblingAttribute<>))
+			{
+				var requiredType = type.GetGenericArguments().First();
+
+				if (!HasComponent(requiredType))
+				{
+					throw new Exception($"Component {component.GetType()} on entity {this} requires sibling component {requiredType.Name}!");
+				}
+			}
+		}
 	}
 
 	public bool HasComponent(Component component)
@@ -71,6 +106,18 @@ public class Entity : IEnumerable<Component>
 	{
 		var type = typeof(T);
 
+		foreach (var comp in _components)
+		{
+			if (comp.GetType() == type)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+	public bool HasComponent(Type type)
+	{
 		foreach (var comp in _components)
 		{
 			if (comp.GetType() == type)
@@ -95,6 +142,19 @@ public class Entity : IEnumerable<Component>
 
 		return false;
 	}
+	public bool HasComponentDerivedFrom(Type type)
+	{
+		foreach (var comp in _components)
+		{
+			if (comp.GetType().IsAssignableTo(type))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 
 
 	public T GetFirstComponent<T>() where T : Component

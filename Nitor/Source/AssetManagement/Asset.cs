@@ -1,8 +1,16 @@
-﻿namespace Nitor.AssetManagement;
+﻿using System.Text;
 
-public abstract class Asset
+namespace Nitor.AssetManagement;
+
+public abstract class Asset : IDisposable
 {
 	public static readonly string PackFile = "Data.pak";
+
+	/// <summary>
+	/// If true, then the assets should be expected to have been packed.<br/>
+	/// Depending on the asset, they be in a different form.
+	/// </summary>
+	public static bool AreAssetsPacked => Application.IsRelease;
 
 	class AssetData
 	{
@@ -36,6 +44,72 @@ public abstract class Asset
 
 		var newAsset = Create<T>(path, ResolveAssetData(path));
 		return newAsset;
+	}
+
+	public static async Task<T> CloneAsync<T>(T source) where T : Asset, new()
+	{
+		string path = source.Path;
+		string basePath;
+		string extension;
+
+		if (path.Contains('.'))
+		{
+			var parts = path.Split('.');
+			basePath = string.Join('.', parts[..^1]);
+			extension = parts[^1];
+		}
+		else
+		{
+			basePath = path;
+			extension = string.Empty;
+		}
+
+		var numChars = new List<char>();
+
+		for (int i = basePath.Length - 1; i > 0; i--)
+		{
+			var c = basePath[i];
+
+			if (char.IsNumber(c))
+			{
+				numChars.Insert(0, c);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		int numberSuffix;
+
+		if (numChars.Count > 0)
+		{
+			numberSuffix = int.Parse(new string(numChars.ToArray()));
+			numberSuffix++;
+		}
+		else
+		{
+			// Start with 2, since it's the second instance.
+			numberSuffix = 2;
+		}
+
+		basePath = basePath.Remove(basePath.Length - numChars.Count) + numberSuffix.ToString();
+		path = string.IsNullOrWhiteSpace(extension) ? basePath : $"{basePath}.{extension}";
+
+		byte[] data;
+
+		var save = source.OnSaveAsync();
+		if (save != null)
+		{
+			data = await save;
+		}
+		else
+		{
+			data = ResolveAssetData(source.Path);
+		}
+
+		var clone = Create<T>(path, data);
+		return clone;
 	}
 
 	public static T Create<T>(string path, byte[] data) where T : Asset, new()
@@ -143,5 +217,29 @@ public abstract class Asset
 	public override string ToString()
 	{
 		return Path;
+	}
+
+	internal static void ReleaseRemaining()
+	{
+		if (_loadedAssets.Count > 0)
+		{
+			var builder = new StringBuilder();
+			builder.AppendLine($"Unloading unreleased assets:");
+
+			foreach (var assetData in _loadedAssets.Values)
+			{
+				builder.AppendLine($"\t- {assetData.Asset.Path}; References: {assetData.ReferenceCount}");
+				assetData.Asset.OnUnload();
+			}
+
+			_loadedAssets.Clear();
+			Console.WriteLine(builder.ToString());
+		}
+	}
+
+	public void Dispose()
+	{
+		Release();
+		GC.SuppressFinalize(this);
 	}
 }

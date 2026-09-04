@@ -1,4 +1,5 @@
-﻿using Silk.NET.Windowing;
+﻿using Nitor.Math;
+using Silk.NET.Windowing;
 using SilkWindow = Silk.NET.Windowing.Window;
 
 namespace Nitor;
@@ -23,10 +24,18 @@ public abstract class Application
 	/// Is this build a release build?
 	/// </summary>
 	public static bool IsRelease => !IsDebug;
+	public static bool IsClosing => Window.IsClosing;
+	public static Vec2i WindowSize
+	{
+		get
+		{
+			var size = Window.Size;
+			return new(size.X, size.Y);
+		}
+	}
+	public static float WindowRatio => (float)WindowSize.X / WindowSize.Y;
 
 	internal static IWindow Window { get; private set; } = null!;
-
-	public static bool IsClosing => Window.IsClosing;
 
 	public void Run()
 	{
@@ -60,6 +69,8 @@ public abstract class Application
 		SystemManager.LateUpdate();
 
 		// TODO: SystemManager.Simulate();
+
+		Time.Step((float)dt);
 	}
 
 	private void Render(double dt)
