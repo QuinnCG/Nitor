@@ -74,6 +74,11 @@ public class Shader : Asset, IBindable
 		}
 	}
 
+	protected override void OnUnload()
+	{
+		Renderer.OpenGL.DeleteShader(Handle);
+	}
+
 	public void Bind()
 	{
 		Renderer.OpenGL.UseProgram(Handle);

@@ -11,13 +11,12 @@ class ImageConverter : AssetConverter
 		Stbi.SetFlipVerticallyOnLoad(true);
 
 		var data = await ReadAllBytesAsync(stream);
-		var imgData = Stbi.LoadFromMemory(new ReadOnlySpan<byte>(data), 4);
+		using var imgData = Stbi.LoadFromMemory(new ReadOnlySpan<byte>(data), 4);
 
 		var writer = new BinaryWriter(new MemoryStream());
 
 		writer.Write(imgData.Width); // Width (4 bytes)
 		writer.Write(imgData.Height); // Height (4 bytes)
-		writer.Write(imgData.NumChannels); // Channels (4 bytes)
 		writer.Write(imgData.Data.Length); // Pixel data length (4 bytes)
 		writer.Write(imgData.Data); // Pixels (variable)
 
