@@ -6,6 +6,8 @@ namespace Nitor;
 
 public static class Time
 {
+	public static int StepCount { get; private set; }
+
 	public static float Now { get; private set; }
 	public static float Delta { get; private set; }
 
@@ -15,5 +17,6 @@ public static class Time
 	{
 		Delta = dt;
 		Now += dt;
+		StepCount++;
 	}
 }

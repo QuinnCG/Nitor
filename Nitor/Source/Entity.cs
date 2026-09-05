@@ -51,7 +51,7 @@ public class Entity : IEnumerable<Component>
 				component.Destroy();
 			}
 
-			World.Remove(this);
+			World.Destroy(this);
 		}
 	}
 
@@ -163,8 +163,6 @@ public class Entity : IEnumerable<Component>
 
 		return false;
 	}
-
-
 
 	public T GetFirstComponent<T>() where T : Component
 	{

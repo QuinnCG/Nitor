@@ -60,7 +60,7 @@ public class Shader : Asset, IBindable
 
 	protected override void OnUnload()
 	{
-		Renderer.OpenGL.DeleteShader(Handle);
+		Renderer.OpenGL.DeleteProgram(Handle);
 	}
 
 	public void Bind()

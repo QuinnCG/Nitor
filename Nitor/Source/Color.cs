@@ -133,8 +133,35 @@ public struct Color
 		};
 	}
 
-	// TODO: From HSV.
-	// TODO: Provide way to calculate and get HSV for given color instance.
+	public static Color FromHSV(float h, float s, float v, float a = 1f)
+	{
+		h = ((h % 1f) + 1f) % 1f;
+		s = float.Clamp(s, 0f, 1f);
+		v = float.Clamp(v, 0f, 1f);
+
+		float scaledH = h * 6f;
+		float c = v * s;
+		float x = c * (1f - MathF.Abs((scaledH % 2f) - 1f));
+
+		float r, g, b;
+
+		if (scaledH < 1f)
+			(r, g, b) = (c, x, 0f);
+		else if (scaledH < 2f)
+			(r, g, b) = (x, c, 0f);
+		else if (scaledH < 3f)
+			(r, g, b) = (0f, c, x);
+		else if (scaledH < 4f)
+			(r, g, b) = (0f, x, c);
+		else if (scaledH < 5f)
+			(r, g, b) = (x, 0f, c);
+		else
+			(r, g, b) = (c, 0f, x);
+
+		float m = v - c;
+
+		return new Color(r + m, g + m, b + m, a);
+	}
 
 	public override readonly string ToString()
 	{
@@ -162,7 +189,7 @@ public struct Color
 		return this;
 	}
 
-	public static Color operator*(Color c, float factor)
+	public static Color operator *(Color c, float factor)
 	{
 		return new()
 		{

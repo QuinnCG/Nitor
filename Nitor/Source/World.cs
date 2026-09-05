@@ -6,8 +6,11 @@ using Nitor.Rendering;
 
 namespace Nitor;
 
-public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable<Entity>
+public class World : IUpdateSystem, ILateUpdateSystem, ISimulateSystem
 {
+	public static int EntityCount => _entities.Count;
+	public static IEnumerable<Entity> Entities => _entities;
+
 	private static readonly HashSet<Entity> _entities = [];
 	private static readonly HashSet<Entity> _destroyed = [];
 
@@ -15,7 +18,7 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 	private static readonly HashSet<ILateUpdatable> _lateUpdate = [];
 	private static readonly HashSet<ISimulatable> _simulate = [];
 
-	public static void Add(params IEnumerable<Entity> entities)
+	public static void Create(params IEnumerable<Entity> entities)
 	{
 		foreach (var entity in entities)
 		{
@@ -54,7 +57,7 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 		}
 	}
 
-	public static void Remove(Entity entity)
+	public static void Destroy(Entity entity)
 	{
 		if (_entities.Contains(entity) && _destroyed.Add(entity))
 		{
@@ -117,17 +120,17 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 	{
 		if (component is IUpdatable update)
 		{
-			_update.Add(update);
+			_update.Remove(update);
 		}
 
 		if (component is ILateUpdatable lateUpdate)
 		{
-			_lateUpdate.Add(lateUpdate);
+			_lateUpdate.Remove(lateUpdate);
 		}
 
 		if (component is ISimulatable simulate)
 		{
-			_simulate.Add(simulate);
+			_simulate.Remove(simulate);
 		}
 
 		if (component is IRenderable render)
@@ -165,15 +168,5 @@ public class World : IUpdateSystem, ILateUpdatable, ISimulateSystem, IEnumerable
 		{
 			simulate.OnSimulate();
 		}
-	}
-
-	public IEnumerator<Entity> GetEnumerator()
-	{
-		return ((IEnumerable<Entity>)_entities).GetEnumerator();
-	}
-
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-		return ((IEnumerable)_entities).GetEnumerator();
 	}
 }

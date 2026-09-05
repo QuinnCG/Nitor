@@ -50,9 +50,9 @@ class Game : Application
 			Color = Color.Blue
 		});
 
-		var cam = new Entity(new Transform(), new CameraView());
+		var cam = new Entity(new Transform(), new CameraView(50f));
 
-		World.Add(myEnt, cam, point);
+		World.Create(myEnt, cam, point);
 	}
 }
 
@@ -63,6 +63,26 @@ class MySystem : IUpdateSystem
 		if (Keyboard.Escape.IsPressed)
 		{
 			Application.Quit();
+		}
+
+		if (Keyboard.Space.IsHeld)
+		{
+			var texture = Asset.Load<Texture>("Images/Logo.png");
+			var shader = Asset.Load<Shader>((Random.Shared.NextSingle() > 0.5f) ? "MyShader.shader" : "MyShader2.shader");
+
+			var mySprite = new Entity(new Transform() { Position = new Vec2(Random.Shared.Next(-100, 100), Random.Shared.Next(-100, 100)) }, new SpriteRenderer()
+			{
+				Shader = shader,
+				Sprite = new Sprite(texture, new(0f, 0f, 1f, 1f)),
+				Color = Color.FromHSV(Random.Shared.NextSingle(), float.Lerp(0.5f, 1f, Random.Shared.NextSingle()), float.Lerp(0.5f, 1f, Random.Shared.NextSingle())),
+				Pivot = new(0f, 0f)
+			});
+
+			World.Create(mySprite);
+		}
+		else if (Keyboard.Backspace.IsHeld)
+		{
+			World.Entities.FirstOrDefault()?.Destroy();
 		}
 	}
 }

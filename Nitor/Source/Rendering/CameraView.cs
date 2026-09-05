@@ -12,6 +12,12 @@ public class CameraView : Component
 
 	private Transform _transform = null!;
 
+	public CameraView() { }
+	public CameraView(float orthgraphicScale)
+	{
+		OrthographicScale = orthgraphicScale;
+	}
+
 	public Matrix4x4 Matrix
 	{
 		get

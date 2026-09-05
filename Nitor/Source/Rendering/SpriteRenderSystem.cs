@@ -6,6 +6,7 @@ namespace Nitor.Rendering;
 public class SpriteRenderSystem : ISystem, ILateUpdateSystem
 {
 	public static float BatchDestroyDelay { get; set; } = 60f;
+	public const int DefaultBatchQuadCountBuffer = 32;
 
 	struct BatchKey : IEquatable<BatchKey>
 	{
@@ -47,27 +48,57 @@ public class SpriteRenderSystem : ISystem, ILateUpdateSystem
 		private float _destroyTime = float.PositiveInfinity;
 		private readonly List<SpriteRenderer> _sprites = [];
 
-		// TODO: Remake buffer if not enough room
-		// TODO: Shrink buffer is too much room for too long.
-
 		private uint _ssbo;
+		private int _currentBufferSize;
 
 		public unsafe void Create()
 		{
 			Renderer.Register(this);
+			CreateBuffer(SpriteInstance.StructSize * DefaultBatchQuadCountBuffer);
+		}
 
+		private void RecreateBuffer(int size)
+		{
+			Renderer.OpenGL.DeleteBuffer(_ssbo);
+			CreateBuffer(size);
+		}
+
+		private unsafe void CreateBuffer(int size)
+		{
 			var gl = Renderer.OpenGL;
 			_ssbo = gl.CreateBuffer();
 			gl.BindBuffer(BufferTargetARB.ShaderStorageBuffer, _ssbo);
-			gl.BufferData(BufferTargetARB.ShaderStorageBuffer, (nuint)(SpriteInstance.StructSize * 5), null, BufferUsageARB.DynamicDraw);
+			gl.BufferData(BufferTargetARB.ShaderStorageBuffer, (nuint)size, null, BufferUsageARB.DynamicDraw);
+
+			_currentBufferSize = size;
 		}
 
 		public unsafe void OnRender()
 		{
+			int minBufferSize = SpriteInstance.StructSize * _sprites.Count;
+			int desiredBufferSize = _currentBufferSize;
+
+			// Grow buffer.
+			while (desiredBufferSize < minBufferSize)
+			{
+				desiredBufferSize *= 2;
+			}
+			// Shrink buffer.
+			while (desiredBufferSize > minBufferSize * 4)
+			{
+				desiredBufferSize /= 2;
+			}
+
+			desiredBufferSize = int.Max(desiredBufferSize, SpriteInstance.StructSize * DefaultBatchQuadCountBuffer);
+			
+			if (_currentBufferSize != desiredBufferSize)
+			{
+				RecreateBuffer(desiredBufferSize);
+			}
+
 			var gl = Renderer.OpenGL;
 
 			gl.BindVertexArray(_vao);
-
 			gl.BindBuffer(BufferTargetARB.ShaderStorageBuffer, _ssbo);
 
 			var instances = new SpriteInstance[_sprites.Count];
@@ -85,11 +116,16 @@ public class SpriteRenderSystem : ISystem, ILateUpdateSystem
 		{
 			Renderer.Unregister(this);
 			Renderer.OpenGL.DeleteBuffer(_ssbo);
+
+			Console.WriteLine("Destroying batch...");
 		}
 
 		public bool Add(SpriteRenderer sprite)
 		{
-			if (_sprites.Contains(sprite)) return false;
+			if (_sprites.Contains(sprite))
+			{
+				return false;
+			}
 
 			_sprites.Add(sprite);
 			_destroyTime = float.PositiveInfinity;

@@ -32,6 +32,7 @@ public class Renderer : IRenderSystem
 	public static readonly string TimeUniform = "uTime";
 	public static readonly string CameraUniform = "uCamera";
 
+	public static int FrameCount { get; private set; }
 	public static GL OpenGL { get; private set; } = null!;
 	public static Color ClearColor { get; set; } = Color.Black;
 
@@ -180,6 +181,8 @@ public class Renderer : IRenderSystem
 				}
 			}
 		}
+
+		FrameCount++;
 	}
 
 	private static void SetUniforms(Shader shader)
