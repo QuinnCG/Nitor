@@ -1,6 +1,7 @@
 ﻿using System.IO.Hashing;
 using System.Linq.Expressions;
 using System.Text;
+using AssetPacker.Converters;
 using Nitor.AssetManagement;
 
 namespace AssetPacker;
@@ -9,9 +10,11 @@ public static class Packer
 {
 	// Maps: File Extension to Converter.
 	private static readonly Dictionary<string, AssetConverter> _converters = [];
+	private static string SourcePath = null!;
 
 	public static async Task PackAsync(string sourcePath, string targetPath)
 	{
+		SourcePath = sourcePath;
 		RegisterConverters();
 		var assets = await ConvertAssetsAsync(sourcePath);
 
@@ -42,10 +45,21 @@ public static class Packer
 		await assetDataHandle;
 	}
 
+	public static byte[] ReadAllBytesAtSource(string subpath)
+	{
+		return File.ReadAllBytes(Path.Combine(SourcePath, subpath));
+	}
+
+	public static bool DoesFileExistAtSource(string subpath)
+	{
+		return File.Exists(Path.Combine(SourcePath, subpath));
+	}
+
 	private static void RegisterConverters()
 	{
 		Register<DefaultConverter>();
 		Register<ImageConverter>();
+		Register<ShaderConverter>();
 	}
 
 	private static Stream CreateAssetData(List<AssetData> assets, int manifestSize, out Dictionary<string, AssetLocation> assetToLocation)
@@ -145,6 +159,11 @@ public static class Packer
 
 		foreach (var extension in converter.Extensions)
 		{
+			if (extension.StartsWith('.'))
+			{
+				throw new Exception($"Asset converter '{typeof(T).Name}' starts with a period on extension '{extension}'! Remove the period.");
+			}
+
 			_converters.Add(extension, converter);
 		}
 	}

@@ -5,18 +5,26 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<AssetPath>Assets</AssetPath>
 		<BaseOutputPath>Binaries\</BaseOutputPath>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		
+		<AssetPath>Assets</AssetPath>
+		<AssetPackStamp>$(IntermediateOutputPath)assets.pack.stamp</AssetPackStamp>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Nitor\Nitor.csproj" />
-
 		<ProjectReference Include="..\AssetPacker\AssetPacker.csproj" ReferenceOutputAssembly="false" Private="false" />
 	</ItemGroup>
 
-	<Target Name="PackAssets" BeforeTargets="Build">
+	<ItemGroup>
+		<AssetFiles Include="$(AssetPath)\**\*" />
+		<UpToDateCheckInput Include="@(AssetFiles)" />
+		<UpToDateCheckOutput Include="$(AssetPackStamp)" />
+	</ItemGroup>
+
+
+	<Target Name="PackAssets" BeforeTargets="Build" Inputs="@(AssetFiles)" Outputs="$(AssetPackStamp)">
 
 		<Message Text="Packing assets..." Importance="high" />
 

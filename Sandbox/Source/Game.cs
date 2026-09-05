@@ -17,6 +17,8 @@ namespace Sandbox;
 //		- Work on editor-mode.
 //		- Consider custom sprite atlases being made with build pipeline? Would need a system for the asset load to redirect loading.
 
+// TODO: Force require bindless textures always.
+
 class Game : Application
 {
 	static void Main()

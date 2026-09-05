@@ -2,22 +2,9 @@
 #version 460 core
 #extension GL_ARB_bindless_texture : require
 
-struct SpriteInstance
-{
-	vec2 position;
-	vec2 size;
+#include SpriteInstance
 
-	vec4 uvMinMax;
-	vec4 color;
-
-	uvec2 textureHandle;
-	float rotation;
-};
-
-layout (std430, binding = 0) readonly buffer SpriteBuffer
-{
-    SpriteInstance sprites[];
-};
+#inject (std430, binding = 0) SpriteInstance sprites
 
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aUV;

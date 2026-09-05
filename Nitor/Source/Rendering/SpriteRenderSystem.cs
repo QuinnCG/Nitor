@@ -47,6 +47,9 @@ public class SpriteRenderSystem : ISystem, ILateUpdateSystem
 		private float _destroyTime = float.PositiveInfinity;
 		private readonly List<SpriteRenderer> _sprites = [];
 
+		// TODO: Remake buffer if not enough room
+		// TODO: Shrink buffer is too much room for too long.
+
 		private uint _ssbo;
 
 		public unsafe void Create()
